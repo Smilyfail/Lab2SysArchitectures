@@ -24,7 +24,7 @@ public class MediaStation extends AbstractBehavior<MediaStation.MovieCommand> {
 
     private final String groupId;
     private final String deviceId;
-    private ActorRef<Blinds.BlindsCommand> blinds;
+    private final ActorRef<Blinds.BlindsCommand> blinds;
 
     public static Behavior<MovieCommand> create(ActorRef<Blinds.BlindsCommand> blinds, String groupId, String deviceId){
         return Behaviors.setup(context -> new MediaStation(context, blinds, groupId, deviceId));
@@ -35,6 +35,8 @@ public class MediaStation extends AbstractBehavior<MediaStation.MovieCommand> {
         this.blinds = blinds;
         this.groupId = groupId;
         this.deviceId = deviceId;
+
+        getContext().getLog().info("MediaStation started");
     }
 
     @Override

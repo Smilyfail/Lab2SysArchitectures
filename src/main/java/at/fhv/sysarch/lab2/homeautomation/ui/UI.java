@@ -8,6 +8,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import at.fhv.sysarch.lab2.homeautomation.devices.AirCondition;
+import at.fhv.sysarch.lab2.homeautomation.devices.Blinds;
 import at.fhv.sysarch.lab2.homeautomation.devices.MediaStation;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.TemperatureSensor;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.WeatherSensor;
@@ -17,23 +18,26 @@ import java.util.Scanner;
 
 public class UI extends AbstractBehavior<Void> {
 
-    private ActorRef<TemperatureSensor.TemperatureCommand> tempSensor;
-    private ActorRef<AirCondition.AirConditionCommand> airCondition;
-    private ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
-    ActorRef<MediaStation.MovieCommand> mediaStation;
+    private final ActorRef<TemperatureSensor.TemperatureCommand> tempSensor;
+    private final ActorRef<AirCondition.AirConditionCommand> airCondition;
+    private final ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
+    private final ActorRef<MediaStation.MovieCommand> mediaStation;
+    private final ActorRef<Blinds.BlindsCommand> blinds;
 
     public static Behavior<Void> create(ActorRef<TemperatureSensor.TemperatureCommand> tempSensor,
                                         ActorRef<AirCondition.AirConditionCommand> airCondition,
                                         ActorRef<WeatherSensor.WeatherCommand> weatherSensor,
-                                        ActorRef<MediaStation.MovieCommand> mediaStation) {
-        return Behaviors.setup(context -> new UI(context, tempSensor, airCondition, weatherSensor, mediaStation));
+                                        ActorRef<MediaStation.MovieCommand> mediaStation,
+                                        ActorRef<Blinds.BlindsCommand> blinds) {
+        return Behaviors.setup(context -> new UI(context, tempSensor, airCondition, weatherSensor, mediaStation, blinds));
     }
 
     private  UI(ActorContext<Void> context,
                 ActorRef<TemperatureSensor.TemperatureCommand> tempSensor,
                 ActorRef<AirCondition.AirConditionCommand> airCondition,
                 ActorRef<WeatherSensor.WeatherCommand> weatherSensor,
-                ActorRef<MediaStation.MovieCommand> mediaStation) {
+                ActorRef<MediaStation.MovieCommand> mediaStation,
+                ActorRef<Blinds.BlindsCommand> blinds) {
 
         super(context);
         // TODO: implement actor and behavior as needed
@@ -42,6 +46,7 @@ public class UI extends AbstractBehavior<Void> {
         this.tempSensor = tempSensor;
         this.weatherSensor = weatherSensor;
         this.mediaStation = mediaStation;
+        this.blinds = blinds;
         new Thread(() -> { this.runCommandLine(); }).start();
 
         getContext().getLog().info("UI started");

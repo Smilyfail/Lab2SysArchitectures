@@ -35,6 +35,8 @@ public class WeatherSensor extends AbstractBehavior<WeatherSensor.WeatherCommand
         this.blinds = blinds;
         this.groupId = groupId;
         this.deviceId = deviceId;
+
+        getContext().getLog().info("WeatherSensor started");
     }
 
     @Override
