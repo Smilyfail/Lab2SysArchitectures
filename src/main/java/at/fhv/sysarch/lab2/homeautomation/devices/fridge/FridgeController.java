@@ -1,7 +1,9 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
+import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
 import java.util.Optional;
@@ -33,6 +35,10 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         super(context);
         this.groupId = groupId;
         this.deviceId = deviceId;
+    }
+
+    public static Behavior<FridgeCommand> create(String groupId, String deviceId) {
+        return Behaviors.setup(context -> new FridgeController(context, groupId, deviceId));
     }
 
     @Override
