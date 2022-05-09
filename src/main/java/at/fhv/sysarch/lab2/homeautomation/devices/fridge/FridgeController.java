@@ -30,6 +30,14 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         }
     }
 
+    private static final class ConsumeProduct implements FridgeCommand {
+        final String productName;
+
+        public ConsumeProduct(String productName) {
+            this.productName = productName;
+        }
+    }
+
 
     private  double maxWeight;
     private final double maxSpace;
@@ -61,6 +69,13 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
 
     @Override
     public Receive<FridgeCommand> createReceive() {
-        return null;
+        return newReceiveBuilder()
+                .onMessage(FridgeWeight.class, this::onFridgeWeightRead)
+                .build();
+    }
+
+    private Behavior<FridgeCommand>onFridgeWeightRead() {
+
+        return this;
     }
 }
