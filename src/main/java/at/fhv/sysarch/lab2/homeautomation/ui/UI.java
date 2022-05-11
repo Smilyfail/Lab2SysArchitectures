@@ -22,31 +22,25 @@ public class UI extends AbstractBehavior<Void> {
     private final ActorRef<AirCondition.AirConditionCommand> airCondition;
     private final ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
     private final ActorRef<MediaStation.MovieCommand> mediaStation;
-    private final ActorRef<Blinds.BlindsCommand> blinds;
 
     public static Behavior<Void> create(ActorRef<TemperatureSensor.TemperatureCommand> tempSensor,
                                         ActorRef<AirCondition.AirConditionCommand> airCondition,
                                         ActorRef<WeatherSensor.WeatherCommand> weatherSensor,
-                                        ActorRef<MediaStation.MovieCommand> mediaStation,
-                                        ActorRef<Blinds.BlindsCommand> blinds) {
-        return Behaviors.setup(context -> new UI(context, tempSensor, airCondition, weatherSensor, mediaStation, blinds));
+                                        ActorRef<MediaStation.MovieCommand> mediaStation) {
+        return Behaviors.setup(context -> new UI(context, tempSensor, airCondition, weatherSensor, mediaStation));
     }
 
     private  UI(ActorContext<Void> context,
                 ActorRef<TemperatureSensor.TemperatureCommand> tempSensor,
                 ActorRef<AirCondition.AirConditionCommand> airCondition,
                 ActorRef<WeatherSensor.WeatherCommand> weatherSensor,
-                ActorRef<MediaStation.MovieCommand> mediaStation,
-                ActorRef<Blinds.BlindsCommand> blinds) {
+                ActorRef<MediaStation.MovieCommand> mediaStation) {
 
         super(context);
-        // TODO: implement actor and behavior as needed
-        // TODO: move UI initialization to appropriate place
         this.airCondition = airCondition;
         this.tempSensor = tempSensor;
         this.weatherSensor = weatherSensor;
         this.mediaStation = mediaStation;
-        this.blinds = blinds;
         new Thread(() -> { this.runCommandLine(); }).start();
 
         getContext().getLog().info("UI started");
@@ -63,28 +57,23 @@ public class UI extends AbstractBehavior<Void> {
     }
 
     public void runCommandLine() {
-        // TODO: Create Actor for UI Input-Handling
         Scanner scanner = new Scanner(System.in);
         String[] input = null;
         String reader = "";
 
         while (!reader.equalsIgnoreCase("quit") && scanner.hasNextLine()) {
             reader = scanner.nextLine();
-            // TODO: change input handling
             String[] command = reader.split(" ");
+
             if(command[0].equals("t")) {
                 this.tempSensor.tell(new TemperatureSensor.ReadTemperature(Optional.of(Double.valueOf(command[1]))));
-            }
-            if(command[0].equals("a")) {
+            }else if(command[0].equals("a")) {
                 this.airCondition.tell(new AirCondition.PowerAirCondition(Optional.of(Boolean.valueOf(command[1]))));
-            }
-            if(command[0].equals("w")) {
+            }else if(command[0].equals("w")) {
                 this.weatherSensor.tell(new WeatherSensor.ReadWeather(Optional.of(String.valueOf(command[1]))));
-            }
-            if(command[0].equals("m")) {
+            }else if(command[0].equals("m")) {
                 this.mediaStation.tell(new MediaStation.ReadMediaStationStatus(Optional.of(Boolean.valueOf(command[1]))));
             }
-            // TODO: process Input
         }
         getContext().getLog().info("UI done");
     }
