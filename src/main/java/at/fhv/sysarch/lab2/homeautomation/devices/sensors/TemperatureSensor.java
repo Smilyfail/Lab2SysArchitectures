@@ -8,6 +8,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import at.fhv.sysarch.lab2.homeautomation.devices.AirCondition;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.Temperature;
 
 import java.util.Optional;
 
@@ -17,9 +18,11 @@ public class TemperatureSensor extends AbstractBehavior<TemperatureSensor.Temper
 
     public static final class ReadTemperature implements TemperatureCommand {
         final Optional<Double> value;
+        final Optional<String> unit;
 
-        public ReadTemperature(Optional<Double> value) {
-            this.value = value;
+        public ReadTemperature(Temperature value) {
+            this.value = Optional.of(value.value());
+            this.unit = Optional.ofNullable(value.unit());
         }
     }
 
