@@ -27,7 +27,13 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
 
     private static final class RequestProductList implements FridgeCommand {}
 
-    private static final class StoreProduct implements FridgeCommand {}
+    private static final class StoreProduct implements FridgeCommand {
+        private Product product;
+
+        private StoreProduct(Product product) {
+            this.product = product;
+        }
+    }
 
     private static final class ConsumeProduct implements FridgeCommand {
         final String productName;
@@ -70,9 +76,8 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
 
     private Behavior<FridgeCommand> onConsume(ConsumeProduct productName) {
 
-        if (this.currentProducts.contains(product.productName)){
-            this.onOrder(new OrderProduct(product, 1));
-            this.currentProducts.remove();
+        if(currentProducts.contains(productName.productName)) {
+
         }else {
             getContext().getLog().info("Cannot consume Product {}, there is no such Product in the fridge", productName.productName);
         }
@@ -85,12 +90,14 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onRequestingProductList(RequestProductList productList) {
-
+        getContext().getLog().info("Retrieving full list of items stored in the fridge...");
+        
         return this;
     }
 
     private Behavior<FridgeCommand> onStoringProduct(StoreProduct productToStore) {
-
+        currentProducts.add(productToStore.product);
+        getContext().getLog().info("Fridge successfully stored Product {}", productToStore.product.getName());
         return this;
     }
 

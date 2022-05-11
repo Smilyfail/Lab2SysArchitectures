@@ -48,7 +48,8 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         this.amountSensor = amountSensor;
         this.weightSensor = weightSensor;
 
-
+        this.weightSensor.tell(new WeightSensor.ReadWeight(getContext().getSelf()));
+        this.amountSensor.tell(new AmountSensor.AvailableSpace(getContext().getSelf()));
         getContext().getLog().info("OrderProcessor started");
     }
 
@@ -65,11 +66,15 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
     }
 
     private Behavior<OrderCommand> onTryOrder(TryOrder tryOrder) {
-        this.weightSensor.tell(new WeightSensor.ReadWeight(getContext().getSelf()));
-        this.amountSensor.tell(new AmountSensor.AvailableSpace(getContext().getSelf()));
-
-        completeOrderRequest();
-        return this;
+        if(availableSpace >= 1 && availableWeight >= tryOrder.product.getWeight()) {
+            getContext().getLog().info("OrderProcessor received order for {} for {}€", tryOrder.product.getName(), tryOrder.product.getPrice());
+            completeOrderRequest();
+        }else if(availableSpace < 1) {
+            getContext().getLog().info("OrderProcessor cannot order {}, not enough space in Fridge, aborting...", tryOrder.product.getName());
+        }else if(availableWeight < tryOrder.product.getWeight()) {
+            getContext().getLog().info("OrderProcessor cannot order {}, not enough weight left for the Fridge, aborting...", tryOrder.product.getName());
+        }
+        return Behaviors.stopped();
     }
 
     private Behavior<OrderCommand> onRequestingAvailableSpace(ReadAvailableSpace availableSpace) {
@@ -85,6 +90,11 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
     private Behavior<OrderCommand> completeOrderRequest() {
 
 
-        return Behaviors.stopped();
+        return this;
+    }
+
+    private OrderProcessor onPostStop() {
+        getContext().getLog().info("OrderProcessor stopped...");
+        return this;
     }
 }
