@@ -12,6 +12,8 @@ import at.fhv.sysarch.lab2.homeautomation.devices.Blinds;
 import at.fhv.sysarch.lab2.homeautomation.devices.MediaStation;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.TemperatureSensor;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.WeatherSensor;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.TemperatureSimulator;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.WeatherSimulator;
 import at.fhv.sysarch.lab2.homeautomation.ui.UI;
 
 public class HomeAutomationController extends AbstractBehavior<Void>{
@@ -20,6 +22,8 @@ public class HomeAutomationController extends AbstractBehavior<Void>{
     private ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
     private ActorRef<Blinds.BlindsCommand> blinds;
     private ActorRef<MediaStation.MovieCommand> mediaStation;
+    private ActorRef<TemperatureSimulator.TemperatureSimulatorCommand> tempSimulator;
+    private ActorRef<WeatherSimulator.WeatherSimulatorCommand> weatherSimulator;
 
     public static Behavior<Void> create() {
         return Behaviors.setup(HomeAutomationController::new);
@@ -27,12 +31,13 @@ public class HomeAutomationController extends AbstractBehavior<Void>{
 
     private  HomeAutomationController(ActorContext<Void> context) {
         super(context);
-        // TODO: consider guardians and hierarchies. Who should create and communicate with which Actors?
         this.airCondition = getContext().spawn(AirCondition.create("2", "1"), "AirCondition");
         this.tempSensor = getContext().spawn(TemperatureSensor.create(this.airCondition, "1", "1"), "temperatureSensor");
         this.weatherSensor = getContext().spawn(WeatherSensor.create(this.blinds, "3", "1"),"weatherSensor");
         this.mediaStation = getContext().spawn(MediaStation.create(this.blinds, "4", "1"), "mediaStation");
         this.blinds = getContext().spawn(Blinds.create("5", "1"), "blinds");
+        this.tempSimulator = getContext().spawn(TemperatureSimulator.create(this.tempSensor, "6", "1"), "tempSimulator");
+        this.weatherSimulator = getContext().spawn(WeatherSimulator.create("rainy", this.blinds, "7", "1"), "weatherSimulator");
         ActorRef<Void> ui = getContext().spawn(UI.create(this.tempSensor, this.airCondition, this.weatherSensor, this.mediaStation), "UI");
         getContext().getLog().info("HomeAutomation Application started");
     }

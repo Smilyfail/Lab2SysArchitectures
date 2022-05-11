@@ -11,6 +11,9 @@ import at.fhv.sysarch.lab2.homeautomation.devices.AirCondition;
 import at.fhv.sysarch.lab2.homeautomation.devices.MediaStation;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.TemperatureSensor;
 import at.fhv.sysarch.lab2.homeautomation.devices.sensors.WeatherSensor;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.Temperature;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.TemperatureSimulator;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.WeatherSimulator;
 
 import java.util.Optional;
 import java.util.Scanner;
@@ -20,7 +23,9 @@ public class UI extends AbstractBehavior<Void> {
     private ActorRef<TemperatureSensor.TemperatureCommand> tempSensor;
     private ActorRef<AirCondition.AirConditionCommand> airCondition;
     private ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
-    ActorRef<MediaStation.MovieCommand> mediaStation;
+    private ActorRef<MediaStation.MovieCommand> mediaStation;
+    private ActorRef<TemperatureSimulator.TemperatureSimulatorCommand> tempSimulator;
+    private ActorRef<WeatherSimulator.WeatherSimulatorCommand> weatherSimulator;
 
     public static Behavior<Void> create(ActorRef<TemperatureSensor.TemperatureCommand> tempSensor,
                                         ActorRef<AirCondition.AirConditionCommand> airCondition,
@@ -36,8 +41,6 @@ public class UI extends AbstractBehavior<Void> {
                 ActorRef<MediaStation.MovieCommand> mediaStation) {
 
         super(context);
-        // TODO: implement actor and behavior as needed
-        // TODO: move UI initialization to appropriate place
         this.airCondition = airCondition;
         this.tempSensor = tempSensor;
         this.weatherSensor = weatherSensor;
@@ -58,17 +61,15 @@ public class UI extends AbstractBehavior<Void> {
     }
 
     public void runCommandLine() {
-        // TODO: Create Actor for UI Input-Handling
         Scanner scanner = new Scanner(System.in);
         String[] input = null;
         String reader = "";
 
         while (!reader.equalsIgnoreCase("quit") && scanner.hasNextLine()) {
             reader = scanner.nextLine();
-            // TODO: change input handling
             String[] command = reader.split(" ");
             if(command[0].equals("t")) {
-                this.tempSensor.tell(new TemperatureSensor.ReadTemperature(Optional.of(Double.valueOf(command[1]))));
+                this.tempSensor.tell(new TemperatureSensor.ReadTemperature(new Temperature("Celsius", Double.parseDouble(command[1]))));
             }
             if(command[0].equals("a")) {
                 this.airCondition.tell(new AirCondition.PowerAirCondition(Optional.of(Boolean.valueOf(command[1]))));
@@ -79,7 +80,6 @@ public class UI extends AbstractBehavior<Void> {
             if(command[0].equals("m")) {
                 this.mediaStation.tell(new MediaStation.ReadMediaStationStatus(Optional.of(Boolean.valueOf(command[1]))));
             }
-            // TODO: process Input
         }
         getContext().getLog().info("UI done");
     }

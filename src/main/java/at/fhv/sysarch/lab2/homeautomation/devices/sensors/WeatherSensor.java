@@ -19,7 +19,7 @@ public class WeatherSensor extends AbstractBehavior<WeatherSensor.WeatherCommand
     public static final class ReadWeather implements WeatherSensor.WeatherCommand {
         final Optional<String> weather;
 
-        public ReadWeather(Weather weather) {
+        public ReadWeather(Optional<String> weather) {
             this.weather = weather;
         }
     }
