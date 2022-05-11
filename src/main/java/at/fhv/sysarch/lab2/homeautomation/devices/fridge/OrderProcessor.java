@@ -12,7 +12,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
 
     public interface OrderCommand {}
 
-    public static final class TryOrder {
+    public static final class TryOrder implements OrderCommand{
         private final Product product;
 
         public TryOrder(Product product) {
@@ -20,7 +20,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         }
     }
 
-    public static final class ReadAvailableSpace {
+    public static final class ReadAvailableSpace implements OrderCommand {
         private final int availableSpace;
 
         public ReadAvailableSpace(int availableSpace) {
@@ -28,7 +28,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         }
     }
 
-    public static final class ReadCurrentWeight {
+    public static final class ReadCurrentWeight implements OrderCommand{
         private final double availableWeight;
 
         public ReadCurrentWeight(double availableWeight) {
@@ -51,7 +51,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
 
         getContext().getLog().info("OrderProcessor started");
     }
-    
+
     public static Behavior<OrderCommand> create(ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor) {
         return Behaviors.setup(context -> new OrderProcessor(context, fridgeController, amountSensor, weightSensor));
     }
