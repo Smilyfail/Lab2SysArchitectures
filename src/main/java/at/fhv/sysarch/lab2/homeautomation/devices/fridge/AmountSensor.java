@@ -1,6 +1,5 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
-import akka.actor.Actor;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
@@ -9,17 +8,15 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
-import java.util.Optional;
-
 public class AmountSensor extends AbstractBehavior<AmountSensor.AmountCommand> {
 
     public interface AmountCommand {}
 
     public static final class AvailableSpace implements AmountCommand {
-        final Optional<Integer> value;
+        final ActorRef<OrderProcessor.OrderCommand> orderProcessor;
 
-        public AvailableSpace(Optional<Integer> value) {
-            this.value = value;
+        public AvailableSpace(ActorRef<OrderProcessor.OrderCommand> orderProcessor) {
+            this.orderProcessor = orderProcessor;
         }
     }
 
@@ -55,7 +52,7 @@ public class AmountSensor extends AbstractBehavior<AmountSensor.AmountCommand> {
 
     private Behavior<AmountCommand> onReadAmount(AvailableSpace readAmount) {
         getContext().getLog().info("AmountSensor reads {} of {} spaces are occupied", occupiedSpace, maxSpace);
-
+        readAmount.orderProcessor.tell(new OrderProcessor.ReadAvailableSpace(maxSpace - occupiedSpace));
         return this;
     }
 

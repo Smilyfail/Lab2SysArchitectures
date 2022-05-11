@@ -74,14 +74,16 @@ public class UI extends AbstractBehavior<Void> {
             reader = scanner.nextLine();
             String[] command = reader.split(" ");
 
-            if(command[0].equals("t")) {
+            if(command[0].equals("temperature")) {
                 this.tempSensor.tell(new TemperatureSensor.ReadTemperature(new Temperature("Celsius", Double.parseDouble(command[1]))));
-            }else if(command[0].equals("a")) {
-                this.tempSensor.tell(new TemperatureSensor.ReadTemperature(new Temperature("Celsius", Optional.of(Double.valueOf(command[1])))));
-            }else if(command[0].equals("w")) {
+            }else if(command[0].equals("ac")) {
+                this.airCondition.tell(new AirCondition.PowerAirCondition(Optional.of(Boolean.valueOf(command[1]))));
+            }else if(command[0].equals("weather")) {
                 this.weatherSensor.tell(new WeatherSensor.ReadWeather(Optional.of(String.valueOf(command[1]))));
-            }else if(command[0].equals("m")) {
+            }else if(command[0].equals("mediaStation")) {
                 this.mediaStation.tell(new MediaStation.ReadMediaStationStatus(Optional.of(Boolean.valueOf(command[1]))));
+            }else if(command[0].equals("consume")) {
+
             }
         }
         getContext().getLog().info("UI done");

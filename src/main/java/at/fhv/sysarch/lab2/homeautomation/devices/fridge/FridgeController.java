@@ -1,5 +1,6 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -7,22 +8,26 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import at.fhv.sysarch.lab2.homeautomation.sharedobjects.Product;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class FridgeController extends AbstractBehavior<FridgeController.FridgeCommand> {
 
     public interface FridgeCommand {}
 
-    public static final class FridgeWeight implements FridgeCommand {
-        final Optional<Double> weight;
+    private static final class OrderProduct implements FridgeCommand {
+        final Product product;
+        final int amount;
 
-        public FridgeWeight(Optional<Double> weight) {
-            this.weight = weight;
+        public OrderProduct(Product product, int amount) {
+            this.product = product;
+            this.amount = amount;
         }
     }
+
+    private static final class RequestProductList implements FridgeCommand {}
+
+    private static final class StoreProduct implements FridgeCommand {}
 
     private static final class ConsumeProduct implements FridgeCommand {
         final String productName;
@@ -35,20 +40,17 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     private List<Product> currentProducts = new ArrayList<>();
     private String groupId;
     private String deviceId;
+    private ActorRef<AmountSensor.AmountCommand> amountSensor;
+    private ActorRef<WeightSensor.WeightCommand> weightSensor;
 
     public FridgeController(ActorContext<FridgeCommand> context, String groupId, String deviceId) {
         super(context);
         this.groupId = groupId;
         this.deviceId = deviceId;
-        this.currentProducts = new ArrayList<>();
-        currentProducts.add(new Product(0.2, 1.49,"Red Bull"));
-        currentProducts.add(new Product(2, 4.99, "Potatoes"));
-        currentProducts.add(new Product(0.5, 2.99, "Carrots"));
-        currentProducts.add(new Product(2, 11.99,"Steak"));
-        currentProducts.add(new Product(0.5, 0.49,"Milk"));
-        currentProducts.add(new Product(0.5, 0.49,"Milk"));
-        currentProducts.add(new Product(0.5, 0.49,"Milk"));
-        currentProducts.add(new Product(0.25, 5.9, "Eggs"));
+        this.amountSensor = getContext().spawn(AmountSensor.create("7", "1"), "amountSensor");
+        this.weightSensor = getContext().spawn(WeightSensor.create("8", "1"), "weightSensor");
+
+        getContext().getLog().info("FridgeController started");
     }
 
     public static Behavior<FridgeCommand> create(String groupId, String deviceId) {
@@ -58,21 +60,42 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     @Override
     public Receive<FridgeCommand> createReceive() {
         return newReceiveBuilder()
+                .onMessage(ConsumeProduct.class, this::onConsume)
+                .onMessage(OrderProduct.class, this::onOrder)
+                .onMessage(RequestProductList.class, this::onRequestingProductList)
+                .onMessage(StoreProduct.class, this::onStoringProduct)
                 .onSignal(PostStop.class, signal -> onPostStop())
                 .build();
     }
 
-    private Behavior<FridgeCommand>onFridgeWeightRead() {
+    private Behavior<FridgeCommand> onConsume(ConsumeProduct productName) {
+
+        if (this.currentProducts.contains(product.productName)){
+            this.onOrder(new OrderProduct(product, 1));
+            this.currentProducts.remove();
+        }else {
+            getContext().getLog().info("Cannot consume Product {}, there is no such Product in the fridge", productName.productName);
+        }
+        return this;
+    }
+
+    private Behavior<FridgeCommand> onOrder(OrderProduct product) {
 
         return this;
     }
 
-    private Behavior<FridgeCommand>onFridgeFillRead() {
+    private Behavior<FridgeCommand> onRequestingProductList(RequestProductList productList) {
+
+        return this;
+    }
+
+    private Behavior<FridgeCommand> onStoringProduct(StoreProduct productToStore) {
+
         return this;
     }
 
     private FridgeController onPostStop() {
-        getContext().getLog().info("Fridge Controller Application stopped");
+        getContext().getLog().info("FridgeController {}-{}", groupId, deviceId);
         return this;
     }
 }

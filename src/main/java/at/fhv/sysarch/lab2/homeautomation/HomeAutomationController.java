@@ -43,8 +43,6 @@ public class HomeAutomationController extends AbstractBehavior<Void>{
         this.weatherSensor = getContext().spawn(WeatherSensor.create(this.blinds, "3", "1"),"weatherSensor");
         this.mediaStation = getContext().spawn(MediaStation.create(this.blinds, "4", "1"), "mediaStation");
         this.fridgeController = getContext().spawn(FridgeController.create("6", "1"), "fridgeController");
-        this.fridgeAmountSensor = getContext().spawn(AmountSensor.create("7", "1"), "amountSensor");
-        this.fridgeWeightSensor = getContext().spawn(WeightSensor.create("8", "1"), "weightSensor");
         this.tempSimulator = getContext().spawn(TemperatureSimulator.create(this.tempSensor, "6", "1"), "tempSimulator");
         this.weatherSimulator = getContext().spawn(WeatherSimulator.create("rainy", this.blinds, "7", "1"), "weatherSimulator");
         ActorRef<Void> ui = getContext().spawn(UI.create(this.tempSensor, this.airCondition, this.weatherSensor, this.mediaStation), "UI");

@@ -1,5 +1,6 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -13,10 +14,10 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
     public interface WeightCommand {}
 
     public static final class ReadWeight implements WeightCommand {
-        final Optional<Double> value;
+        private final ActorRef<OrderProcessor.OrderCommand> orderProcessor;
 
-        public ReadWeight(Optional<Double> value) {
-            this.value = value;
+        public ReadWeight(ActorRef<OrderProcessor.OrderCommand> orderProcessor) {
+            this.orderProcessor = orderProcessor;
         }
     }
 
@@ -43,7 +44,7 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
     private String groupId;
     private String deviceId;
     private final double maxWeight = 50.00;
-    private double currentWeight = 0;
+    private double currentWeight = 0.00;
 
     public WeightSensor(ActorContext<WeightCommand> context, String groupId, String deviceId) {
         super(context);
@@ -65,7 +66,7 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
 
     private Behavior<WeightCommand> onReadWeight(ReadWeight weight) {
         getContext().getLog().info("WeightSensor reads {} out of {}kg are occupied", currentWeight, maxWeight);
-
+        weight.orderProcessor.tell(new OrderProcessor.ReadCurrentWeight((maxWeight - currentWeight)));
         return this;
     }
 
