@@ -10,12 +10,13 @@ import akka.actor.typed.javadsl.Receive;
 import at.fhv.sysarch.lab2.homeautomation.sharedobjects.Product;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FridgeController extends AbstractBehavior<FridgeController.FridgeCommand> {
 
     public interface FridgeCommand {}
 
-    private static final class OrderProduct implements FridgeCommand {
+    public static final class OrderProduct implements FridgeCommand {
         final Product product;
         final int amount;
 
@@ -25,17 +26,17 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         }
     }
 
-    private static final class RequestProductList implements FridgeCommand {}
+    public static final class RequestProductList implements FridgeCommand {}
 
-    private static final class StoreProduct implements FridgeCommand {
-        private Product product;
+    public static final class StoreProduct implements FridgeCommand {
+        final Product product;
 
-        private StoreProduct(Product product) {
+        public StoreProduct(Product product) {
             this.product = product;
         }
     }
 
-    private static final class ConsumeProduct implements FridgeCommand {
+    public static final class ConsumeProduct implements FridgeCommand {
         final String productName;
 
         public ConsumeProduct(String productName) {
@@ -48,7 +49,7 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     private String deviceId;
     private ActorRef<AmountSensor.AmountCommand> amountSensor;
     private ActorRef<WeightSensor.WeightCommand> weightSensor;
-
+    private ActorRef<OrderProcessor.OrderCommand> orderProcessor;
     public FridgeController(ActorContext<FridgeCommand> context, String groupId, String deviceId) {
         super(context);
         this.groupId = groupId;
@@ -75,8 +76,17 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onConsume(ConsumeProduct productName) {
+        Optional<Product> product = currentProducts.stream().filter(p -> p.getName().equals(productName.productName)).findFirst();
 
-        if(currentProducts.contains(productName.productName)) {
+        if(product.isPresent()) {
+            currentProducts.remove(product);
+            getContext().getLog().info("Removed {} from the fridge, checking for other ones...", productName);
+            Optional<Product> product1 = currentProducts.stream().filter(p -> p.getName().equals(productName.productName)).findFirst();
+
+            if(product1.isEmpty()){
+                getContext().getLog().info("No more {} is left, ordering new ones...", product.get().getName());
+                this.onOrder(new OrderProduct(new Product(product.get().getPrice(), product.get().getWeight(), product.get().getName()), 1));
+            }
 
         }else {
             getContext().getLog().info("Cannot consume Product {}, there is no such Product in the fridge", productName.productName);
@@ -85,13 +95,21 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onOrder(OrderProduct product) {
-
+        this.orderProcessor = getContext().spawn(OrderProcessor.create(getContext().getSelf(), this.amountSensor, this.weightSensor), "OrderProcessor");
+        for(int i = 0; i < product.amount; i++) {
+            this.orderProcessor.tell(new OrderProcessor.TryOrder(product.product));
+        }
         return this;
     }
 
     private Behavior<FridgeCommand> onRequestingProductList(RequestProductList productList) {
         getContext().getLog().info("Retrieving full list of items stored in the fridge...");
-        
+        int i = 1;
+
+        for (Product currentProduct : currentProducts) {
+            getContext().getLog().info("Product {}: {}", i, currentProduct.getName());
+            i++;
+        }
         return this;
     }
 

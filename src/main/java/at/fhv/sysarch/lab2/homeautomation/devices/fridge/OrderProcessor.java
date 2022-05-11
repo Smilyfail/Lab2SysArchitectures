@@ -12,7 +12,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
 
     public interface OrderCommand {}
 
-    public static final class TryOrder implements OrderCommand{
+    public static final class TryOrder implements OrderCommand {
         private final Product product;
 
         public TryOrder(Product product) {
@@ -28,7 +28,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         }
     }
 
-    public static final class ReadCurrentWeight implements OrderCommand{
+    public static final class ReadCurrentWeight implements OrderCommand {
         private final double availableWeight;
 
         public ReadCurrentWeight(double availableWeight) {
@@ -68,7 +68,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
     private Behavior<OrderCommand> onTryOrder(TryOrder tryOrder) {
         if(availableSpace >= 1 && availableWeight >= tryOrder.product.getWeight()) {
             getContext().getLog().info("OrderProcessor received order for {} for {}€", tryOrder.product.getName(), tryOrder.product.getPrice());
-            completeOrderRequest();
+            completeOrderRequest(tryOrder.product);
         }else if(availableSpace < 1) {
             getContext().getLog().info("OrderProcessor cannot order {}, not enough space in Fridge, aborting...", tryOrder.product.getName());
         }else if(availableWeight < tryOrder.product.getWeight()) {
@@ -87,9 +87,9 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         return this;
     }
 
-    private Behavior<OrderCommand> completeOrderRequest() {
-
-
+    private Behavior<OrderCommand> completeOrderRequest(Product product) {
+        getContext().getLog().info("OrderProcessor successfully Ordered product {}, storing...", product.getName());
+        this.fridgeController.tell(new FridgeController.StoreProduct(product));
         return this;
     }
 

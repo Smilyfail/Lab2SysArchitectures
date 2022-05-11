@@ -25,8 +25,6 @@ public class HomeAutomationController extends AbstractBehavior<Void>{
     private ActorRef<WeatherSensor.WeatherCommand> weatherSensor;
     private ActorRef<Blinds.BlindsCommand> blinds;
     private ActorRef<MediaStation.MovieCommand> mediaStation;
-    private ActorRef<WeightSensor.WeightCommand> fridgeWeightSensor;
-    private ActorRef<AmountSensor.AmountCommand> fridgeAmountSensor;
     private ActorRef<FridgeController.FridgeCommand> fridgeController;
     private ActorRef<TemperatureSimulator.TemperatureSimulatorCommand> tempSimulator;
     private ActorRef<WeatherSimulator.WeatherSimulatorCommand> weatherSimulator;
@@ -43,9 +41,9 @@ public class HomeAutomationController extends AbstractBehavior<Void>{
         this.weatherSensor = getContext().spawn(WeatherSensor.create(this.blinds, "3", "1"),"weatherSensor");
         this.mediaStation = getContext().spawn(MediaStation.create(this.blinds, "4", "1"), "mediaStation");
         this.fridgeController = getContext().spawn(FridgeController.create("6", "1"), "fridgeController");
-        this.tempSimulator = getContext().spawn(TemperatureSimulator.create(this.tempSensor, "6", "1"), "tempSimulator");
-        this.weatherSimulator = getContext().spawn(WeatherSimulator.create("rainy", this.blinds, "7", "1"), "weatherSimulator");
-        ActorRef<Void> ui = getContext().spawn(UI.create(this.tempSensor, this.airCondition, this.weatherSensor, this.mediaStation), "UI");
+        this.tempSimulator = getContext().spawn(TemperatureSimulator.create(this.tempSensor, "7", "1"), "tempSimulator");
+        this.weatherSimulator = getContext().spawn(WeatherSimulator.create("rainy", this.blinds, "8", "1"), "weatherSimulator");
+        ActorRef<Void> ui = getContext().spawn(UI.create(this.tempSensor, this.airCondition, this.weatherSensor, this.mediaStation, this.fridgeController), "UI");
 
         getContext().getLog().info("HomeAutomation Application started");
     }
