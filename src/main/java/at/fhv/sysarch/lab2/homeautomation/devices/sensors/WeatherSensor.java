@@ -26,7 +26,7 @@ public class WeatherSensor extends AbstractBehavior<WeatherSensor.WeatherCommand
 
     private final String groupId;
     private final String deviceId;
-    private ActorRef<Blinds.BlindsCommand> blinds;
+    private final ActorRef<Blinds.BlindsCommand> blinds;
 
     public static Behavior<WeatherCommand> create(ActorRef<Blinds.BlindsCommand> blinds, String groupId, String deviceId) {
         return Behaviors.setup(context -> new WeatherSensor(context, blinds, groupId, deviceId));
@@ -37,6 +37,8 @@ public class WeatherSensor extends AbstractBehavior<WeatherSensor.WeatherCommand
         this.blinds = blinds;
         this.groupId = groupId;
         this.deviceId = deviceId;
+
+        getContext().getLog().info("WeatherSensor started");
     }
 
     @Override
