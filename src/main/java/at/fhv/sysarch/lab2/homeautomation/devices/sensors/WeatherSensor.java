@@ -8,6 +8,8 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import at.fhv.sysarch.lab2.homeautomation.devices.Blinds;
+import at.fhv.sysarch.lab2.homeautomation.devices.simulator.Weather;
+
 import java.util.Optional;
 
 public class WeatherSensor extends AbstractBehavior<WeatherSensor.WeatherCommand> {
