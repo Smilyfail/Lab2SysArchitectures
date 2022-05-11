@@ -1,15 +1,13 @@
-package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
+package at.fhv.sysarch.lab2.homeautomation.sharedobjects;
 
 public class Product {
     private double weight;
     private double price;
-    private Double space;
     private String name;
 
-    public Product(double weight, double price, double space, String name) {
+    public Product(double weight, double price, String name) {
         this.weight = weight;
         this.price = price;
-        this.space = space;
         this.name = name;
     }
 
@@ -19,10 +17,6 @@ public class Product {
 
     public double getPrice() {
         return price;
-    }
-
-    public double getSpace() {
-        return space;
     }
 
     public String getName() {

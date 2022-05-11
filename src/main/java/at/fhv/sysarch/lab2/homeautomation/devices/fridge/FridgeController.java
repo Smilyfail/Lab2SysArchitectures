@@ -1,10 +1,12 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
 import akka.actor.typed.Behavior;
+import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
+import at.fhv.sysarch.lab2.homeautomation.sharedobjects.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +24,6 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         }
     }
 
-    public static final class FridgeFill implements FridgeCommand {
-        final Optional<Integer> value;
-
-        public FridgeFill(Optional<Integer> value) {
-            this.value = value;
-        }
-    }
-
     private static final class ConsumeProduct implements FridgeCommand {
         final String productName;
 
@@ -38,29 +32,23 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         }
     }
 
-
-    private  double maxWeight;
-    private final double maxSpace;
     private List<Product> currentProducts = new ArrayList<>();
-
     private String groupId;
     private String deviceId;
 
     public FridgeController(ActorContext<FridgeCommand> context, String groupId, String deviceId) {
         super(context);
-        this.maxWeight = 50;
-        this.maxSpace = 50;
         this.groupId = groupId;
         this.deviceId = deviceId;
         this.currentProducts = new ArrayList<>();
-        currentProducts.add(new Product(0.2, 1.49, 0.5, "Red Bull"));
-        currentProducts.add(new Product(2, 4.99, 3, "Potatoes"));
-        currentProducts.add(new Product(0.5, 2.99, 1, "Carrots"));
-        currentProducts.add(new Product(2, 11.99, 5, "Steak"));
-        currentProducts.add(new Product(0.5, 0.49, 0.5, "Milk"));
-        currentProducts.add(new Product(0.5, 0.49, 0.5, "Milk"));
-        currentProducts.add(new Product(0.5, 0.49, 0.5, "Milk"));
-        currentProducts.add(new Product(0.25, 5.99, 1, "Eggs"));
+        currentProducts.add(new Product(0.2, 1.49,"Red Bull"));
+        currentProducts.add(new Product(2, 4.99, "Potatoes"));
+        currentProducts.add(new Product(0.5, 2.99, "Carrots"));
+        currentProducts.add(new Product(2, 11.99,"Steak"));
+        currentProducts.add(new Product(0.5, 0.49,"Milk"));
+        currentProducts.add(new Product(0.5, 0.49,"Milk"));
+        currentProducts.add(new Product(0.5, 0.49,"Milk"));
+        currentProducts.add(new Product(0.25, 5.9, "Eggs"));
     }
 
     public static Behavior<FridgeCommand> create(String groupId, String deviceId) {
@@ -70,12 +58,21 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     @Override
     public Receive<FridgeCommand> createReceive() {
         return newReceiveBuilder()
-                .onMessage(FridgeWeight.class, this::onFridgeWeightRead)
+                .onSignal(PostStop.class, signal -> onPostStop())
                 .build();
     }
 
     private Behavior<FridgeCommand>onFridgeWeightRead() {
 
+        return this;
+    }
+
+    private Behavior<FridgeCommand>onFridgeFillRead() {
+        return this;
+    }
+
+    private FridgeController onPostStop() {
+        getContext().getLog().info("Fridge Controller Application stopped");
         return this;
     }
 }

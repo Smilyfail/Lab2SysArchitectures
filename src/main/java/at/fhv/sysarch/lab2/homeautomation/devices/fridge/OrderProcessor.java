@@ -11,6 +11,8 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
 
     public interface OrderCommand {}
 
+    public static final class TryOrder {}
+
     private final ActorRef<FridgeController.FridgeCommand> fridgeController;
     private final ActorRef<AmountSensor.AmountCommand> amountSensor;
     private final ActorRef<WeightSensor.WeightCommand> weightSensor;
@@ -21,18 +23,19 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
         this.amountSensor = amountSensor;
         this.weightSensor = weightSensor;
     }
-
+    
     public static Behavior<OrderCommand> createActorRef(ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor) {
         return Behaviors.setup(context -> new OrderProcessor(context, fridgeController, amountSensor, weightSensor));
     }
 
     public Receive<OrderCommand> createReceive() {
         return newReceiveBuilder()
-                .onMessage()
+                .onMessage(TryOrder.class, this::onTryOrder)
                 .build();
     }
 
-    private Behavior<OrderCommand>tryOrder() {
+    private Behavior<OrderCommand> onTryOrder(TryOrder tryOrder) {
 
+        return this;
     }
 }
