@@ -1,13 +1,11 @@
 package at.fhv.sysarch.lab2.homeautomation.devices.fridge;
 
-import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
-
 import java.util.Optional;
 
 public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
@@ -38,8 +36,8 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
         }
     }
 
-    public static Behavior<WeightCommand> create(ActorRef<FridgeController.FridgeCommand> fridgeController, String groupId, String deviceId) {
-        return Behaviors.setup(context -> new WeightSensor(context, fridgeController, groupId, deviceId));
+    public static Behavior<WeightCommand> create(String groupId, String deviceId) {
+        return Behaviors.setup(context -> new WeightSensor(context, groupId, deviceId));
     }
 
     private String groupId;
@@ -47,7 +45,7 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
     private final double maxWeight = 50.00;
     private double currentWeight = 0;
 
-    public WeightSensor(ActorContext<WeightCommand> context, ActorRef<FridgeController.FridgeCommand> fridgeController, String groupId, String deviceId) {
+    public WeightSensor(ActorContext<WeightCommand> context, String groupId, String deviceId) {
         super(context);
         this.groupId = groupId;
         this.deviceId = deviceId;
@@ -66,8 +64,8 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
     }
 
     private Behavior<WeightCommand> onReadWeight(ReadWeight weight) {
-        getContext().getLog().info("WeightSensor received {}", weight.value.get());
-        this.fridgeController.tell(new FridgeController.FridgeWeight(weight.value));
+        getContext().getLog().info("WeightSensor reads {} out of {}kg are occupied", currentWeight, maxWeight);
+
         return this;
     }
 
