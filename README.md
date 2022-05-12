@@ -77,11 +77,11 @@ Items can be stored, but this is usually only used on orders currently
 
 ### Consuming items from the fridge:
     consume eggs - will remove the eggs from the fridge & immediately order new ones
-    consume eggs - cannot consume - none left
+    consume egg - cannot consume - no such product 
 
 ### Ordering items:
     order {50+} {any price} {name} - will not work, not enough space left
-    order {0 - 50} {any price} {name} - will order the item, if there arent 50 items yet
+    order {0 - 50} {any price} {name} - will order the item, if it does not total over 50kg together with the current weight
 
 ### Displaying Contents
     fridgecontents - will display eggs as standard, as there are no other dummy data in there, but will display more as more get added!
