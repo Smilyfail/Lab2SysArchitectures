@@ -1,4 +1,5 @@
 # Lab2SysArchitectures
+Submitted by Dario Birbamer & Dominic Kühne
 
 # How to start the Application:
 1. Open in IntelliJ or a similar Program
