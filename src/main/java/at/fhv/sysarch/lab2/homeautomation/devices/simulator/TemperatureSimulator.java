@@ -41,7 +41,7 @@ public class TemperatureSimulator extends AbstractBehavior<TemperatureSimulator.
         this.groupId = groupId;
         this.deviceId = deviceId;
         this.temperatureTimeSchedule = temperatureTimeSchedule;
-        this.temperatureTimeSchedule.startTimerAtFixedRate(new CurrentTemperature(new Temperature(currentTemperature.unit(), currentTemperature.value())), Duration.ofSeconds(10));
+        this.temperatureTimeSchedule.startTimerAtFixedRate(new CurrentTemperature(new Temperature(currentTemperature.unit(), currentTemperature.value())), Duration.ofSeconds(60));
 
         getContext().getLog().info("TemperatureSimulator started");
     }

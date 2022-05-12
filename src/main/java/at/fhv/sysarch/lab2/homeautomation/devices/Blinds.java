@@ -33,7 +33,7 @@ public class Blinds extends AbstractBehavior<Blinds.BlindsCommand> {
     private final String deviceId;
     private boolean activeMovie = false;
     private boolean closed = false;
-
+    private String weatherVariant;
     public static Behavior<BlindsCommand> create(String groupId, String deviceId) {
         return Behaviors.setup(context -> new Blinds(context, groupId, deviceId));
     }
@@ -63,20 +63,27 @@ public class Blinds extends AbstractBehavior<Blinds.BlindsCommand> {
             if(!this.activeMovie){
                 getContext().getLog().info("Opening blinds...");
                 this.closed = false;
+            }else{
+                getContext().getLog().info("Cannot open Blinds, a movie is playing...");
             }
         }
+        this.weatherVariant = weatherType.weatherType.get();
         return this;
     }
 
     private Behavior<BlindsCommand> onMediaStationPowerRead(MediaStationPower mediaStationPower) {
-        if (mediaStationPower.mediaStationPower.get()) {
+        if (mediaStationPower.mediaStationPower.get().equals(true)) {
             this.activeMovie = true;
             getContext().getLog().info("Closing blinds...");
             this.closed = true;
         }else{
-            this.activeMovie = false;
-            getContext().getLog().info("Opening blinds...");
-            this.closed = false;
+            if(!this.weatherVariant.equals("sunny")) {
+                this.activeMovie = false;
+                getContext().getLog().info("Opening blinds...");
+                this.closed = false;
+            }else{
+                getContext().getLog().info("Cannot open blinds, it is still too bright outside...");
+            }
         }
         return this;
     }

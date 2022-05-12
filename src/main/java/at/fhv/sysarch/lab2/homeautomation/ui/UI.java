@@ -79,7 +79,7 @@ public class UI extends AbstractBehavior<Void> {
                 this.airCondition.tell(new AirCondition.PowerAirCondition(Optional.of(Boolean.valueOf(command[1]))));
             }else if(command[0].equals("weather")) {
                 this.weatherSensor.tell(new WeatherSensor.ReadWeather(Optional.of(String.valueOf(command[1]))));
-            }else if(command[0].equals("mediaStation")) {
+            }else if(command[0].equals("mediastation")) {
                 this.mediaStation.tell(new MediaStation.ReadMediaStationStatus(Optional.of(Boolean.valueOf(command[1]))));
             }else if(command[0].equals("consume") && command[1] != null) {
                 this.fridgeController.tell(new FridgeController.ConsumeProduct(command[1]));

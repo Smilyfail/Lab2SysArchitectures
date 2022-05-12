@@ -57,6 +57,7 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         this.amountSensor = getContext().spawn(AmountSensor.create("7", "1"), "amountSensor");
         this.weightSensor = getContext().spawn(WeightSensor.create("8", "1"), "weightSensor");
 
+        this.currentProducts.add(new Product(0.5, 2.99, "Eggs"));
         getContext().getLog().info("FridgeController started");
     }
 
