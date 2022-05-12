@@ -47,7 +47,7 @@ public class WeatherSimulator extends AbstractBehavior<WeatherSimulator.WeatherS
 
     private Behavior<WeatherSimulatorCommand> changeWeather(WeatherUpdate weatherUpdate) {
         currentWeather = Weather.random().toString();
-        this.blinds.tell();
+        this.blinds.tell(new Blinds.WeatherType(Optional.of(currentWeather)));
         getContext().getLog().info("WeatherSimulator received {}, changing weather...", currentWeather);
         return Behaviors.same();
     }

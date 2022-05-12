@@ -23,14 +23,6 @@ public class TemperatureSimulator extends AbstractBehavior<TemperatureSimulator.
         }
     }
 
-    public static final class TemperatureRequest implements TemperatureSimulatorCommand {
-        ActorRef<TemperatureSensor.TemperatureCommand> sensor;
-
-        public TemperatureRequest(ActorRef<TemperatureSensor.TemperatureCommand> sensor) {
-            this.sensor = sensor;
-        }
-    }
-
     private Random random = new Random();
     private Temperature currentTemperature;
     private ActorRef<TemperatureSensor.TemperatureCommand> tempSensor;
