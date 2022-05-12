@@ -39,22 +39,24 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
     private final ActorRef<FridgeController.FridgeCommand> fridgeController;
     private final ActorRef<AmountSensor.AmountCommand> amountSensor;
     private final ActorRef<WeightSensor.WeightCommand> weightSensor;
-    private int availableSpace;
-    private double availableWeight;
+    private int availableSpace = -1;
+    private double availableWeight = -1;
+    private final Product product;
 
-    public OrderProcessor(ActorContext<OrderCommand> context, ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor) {
+    public OrderProcessor(ActorContext<OrderCommand> context, ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor, Product product) {
         super(context);
         this.fridgeController = fridgeController;
         this.amountSensor = amountSensor;
         this.weightSensor = weightSensor;
-
+        this.product = product;
         this.weightSensor.tell(new WeightSensor.ReadWeight(getContext().getSelf()));
         this.amountSensor.tell(new AmountSensor.AvailableSpace(getContext().getSelf()));
+
         getContext().getLog().info("OrderProcessor started");
     }
 
-    public static Behavior<OrderCommand> create(ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor) {
-        return Behaviors.setup(context -> new OrderProcessor(context, fridgeController, amountSensor, weightSensor));
+    public static Behavior<OrderCommand> create(ActorRef<FridgeController.FridgeCommand> fridgeController, ActorRef<AmountSensor.AmountCommand> amountSensor, ActorRef<WeightSensor.WeightCommand> weightSensor, Product product) {
+        return Behaviors.setup(context -> new OrderProcessor(context, fridgeController, amountSensor, weightSensor, product));
     }
 
     public Receive<OrderCommand> createReceive() {
@@ -66,15 +68,19 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
     }
 
     private Behavior<OrderCommand> onTryOrder(TryOrder tryOrder) {
-        if(availableSpace >= 1 && availableWeight >= tryOrder.product.getWeight()) {
-            getContext().getLog().info("OrderProcessor received order for {} for {}€", tryOrder.product.getName(), tryOrder.product.getPrice());
-            completeOrderRequest(tryOrder.product);
-        }else if(availableSpace < 1) {
-            getContext().getLog().info("OrderProcessor cannot order {}, not enough space in Fridge, aborting...", tryOrder.product.getName());
-        }else if(availableWeight < tryOrder.product.getWeight()) {
-            getContext().getLog().info("OrderProcessor cannot order {}, not enough weight left for the Fridge, aborting...", tryOrder.product.getName());
+        if(availableWeight != -1 && availableSpace != -1) {
+            if (availableSpace < 1) {
+                getContext().getLog().info("OrderProcessor cannot order {}, not enough space in Fridge, aborting...", tryOrder.product.getName());
+            } else if (availableWeight < tryOrder.product.getWeight()) {
+                getContext().getLog().info("OrderProcessor cannot order {}, not enough weight left for the Fridge, aborting...", tryOrder.product.getName());
+            } else {
+                getContext().getLog().info("OrderProcessor received order for {} for {}€", tryOrder.product.getName(), tryOrder.product.getPrice());
+                getContext().getLog().info("OrderProcessor successfully Ordered product {}, storing...", product.getName());
+                this.fridgeController.tell(new FridgeController.StoreProduct(product));
+            }
+            return Behaviors.stopped();
         }
-        return Behaviors.stopped();
+        return this;
     }
 
     private Behavior<OrderCommand> onRequestingAvailableSpace(ReadAvailableSpace availableSpace) {
@@ -84,17 +90,7 @@ public class OrderProcessor extends AbstractBehavior<OrderProcessor.OrderCommand
 
     private Behavior<OrderCommand> onRequestingCurrentWeight(ReadCurrentWeight currentWeight) {
         this.availableWeight = currentWeight.availableWeight;
-        return this;
-    }
-
-    private Behavior<OrderCommand> completeOrderRequest(Product product) {
-        getContext().getLog().info("OrderProcessor successfully Ordered product {}, storing...", product.getName());
-        this.fridgeController.tell(new FridgeController.StoreProduct(product));
-        return this;
-    }
-
-    private OrderProcessor onPostStop() {
-        getContext().getLog().info("OrderProcessor stopped...");
+        this.getContext().getSelf().tell(new TryOrder(this.product));
         return this;
     }
 }

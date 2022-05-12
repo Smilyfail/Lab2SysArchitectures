@@ -44,7 +44,7 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
     private String groupId;
     private String deviceId;
     private final double maxWeight = 50.00;
-    private double currentWeight = 0.00;
+    private double currentWeight = 0;
 
     public WeightSensor(ActorContext<WeightCommand> context, String groupId, String deviceId) {
         super(context);
@@ -66,19 +66,20 @@ public class WeightSensor extends AbstractBehavior<WeightSensor.WeightCommand> {
 
     private Behavior<WeightCommand> onReadWeight(ReadWeight weight) {
         getContext().getLog().info("WeightSensor reads {} out of {}kg are occupied", currentWeight, maxWeight);
+        double availableWeight = maxWeight - currentWeight;
         weight.orderProcessor.tell(new OrderProcessor.ReadCurrentWeight((maxWeight - currentWeight)));
         return this;
     }
 
     private Behavior<WeightCommand> onAddWeight(AddWeight weight) {
         currentWeight += weight.weight;
-        getContext().getLog().info("WeightSensor recieved {}kg to add, there are now {} out of {}kg occupied", currentWeight, currentWeight, maxWeight);
+        getContext().getLog().info("WeightSensor received {}kg to add, there are now {} out of {}kg occupied", weight.weight, currentWeight, maxWeight);
         return this;
     }
 
     private Behavior<WeightCommand> onRemoveWeight(RemoveWeight weight) {
         currentWeight -= weight.weight;
-        getContext().getLog().info("WeightSensor recieved {}kg to remove, there are now {} out of {}kg occupied", currentWeight, currentWeight, maxWeight);
+        getContext().getLog().info("WeightSensor received {}kg to remove, there are now {} out of {}kg occupied", weight.weight, currentWeight, maxWeight);
         return this;
     }
 

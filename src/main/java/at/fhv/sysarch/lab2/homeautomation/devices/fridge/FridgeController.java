@@ -18,11 +18,9 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
 
     public static final class OrderProduct implements FridgeCommand {
         final Product product;
-        final int amount;
 
-        public OrderProduct(Product product, int amount) {
+        public OrderProduct(Product product) {
             this.product = product;
-            this.amount = amount;
         }
     }
 
@@ -50,7 +48,7 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     private ActorRef<AmountSensor.AmountCommand> amountSensor;
     private ActorRef<WeightSensor.WeightCommand> weightSensor;
     private ActorRef<OrderProcessor.OrderCommand> orderProcessor;
-    private int id;
+    private int id = 1;
     public FridgeController(ActorContext<FridgeCommand> context, String groupId, String deviceId) {
         super(context);
         this.groupId = groupId;
@@ -58,7 +56,7 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         this.amountSensor = getContext().spawn(AmountSensor.create("7", "1"), "amountSensor");
         this.weightSensor = getContext().spawn(WeightSensor.create("8", "1"), "weightSensor");
 
-        this.currentProducts.add(new Product(0.5, 2.99, "Eggs"));
+        this.getContext().getSelf().tell(new StoreProduct(new Product(0.5, 2.99, "eggs")));
         getContext().getLog().info("FridgeController started");
     }
 
@@ -81,13 +79,15 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
         Optional<Product> product = currentProducts.stream().filter(p -> p.getName().equals(productName.productName)).findFirst();
 
         if(product.isPresent()) {
-            currentProducts.remove(product);
-            getContext().getLog().info("Removed {} from the fridge, checking for other ones...", productName);
+            currentProducts.remove(product.get());
+            this.weightSensor.tell(new WeightSensor.RemoveWeight(product.get().getWeight()));
+            this.amountSensor.tell(new AmountSensor.FreeSpace());
+            getContext().getLog().info("Removed {} from the fridge, checking for other ones...", productName.productName);
             Optional<Product> product1 = currentProducts.stream().filter(p -> p.getName().equals(productName.productName)).findFirst();
 
             if(product1.isEmpty()){
                 getContext().getLog().info("No more {} is left, ordering new ones...", product.get().getName());
-                this.onOrder(new OrderProduct(new Product(product.get().getPrice(), product.get().getWeight(), product.get().getName()), 1));
+                getContext().getSelf().tell(new OrderProduct(new Product(product.get().getWeight(), product.get().getPrice(), product.get().getName())));
             }
 
         }else {
@@ -97,11 +97,8 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onOrder(OrderProduct product) {
-        this.orderProcessor = getContext().spawn(OrderProcessor.create(getContext().getSelf(), this.amountSensor, this.weightSensor), "OrderProcessor Number:" + id);
+        this.orderProcessor = getContext().spawn(OrderProcessor.create(getContext().getSelf(), this.amountSensor, this.weightSensor, product.product), "OrderProcessorNumber" + id);
         this.id ++;
-        for(int i = 0; i < product.amount; i++) {
-            this.orderProcessor.tell(new OrderProcessor.TryOrder(product.product));
-        }
         return this;
     }
 
@@ -117,7 +114,9 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onStoringProduct(StoreProduct productToStore) {
-        currentProducts.add(productToStore.product);
+        this.amountSensor.tell(new AmountSensor.OccupySpace());
+        this.weightSensor.tell(new WeightSensor.AddWeight(productToStore.product.getWeight()));
+        this.currentProducts.add(productToStore.product);
         getContext().getLog().info("Fridge successfully stored Product {}", productToStore.product.getName());
         return this;
     }

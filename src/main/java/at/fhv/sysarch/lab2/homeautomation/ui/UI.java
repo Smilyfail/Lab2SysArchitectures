@@ -83,12 +83,12 @@ public class UI extends AbstractBehavior<Void> {
                 this.mediaStation.tell(new MediaStation.ReadMediaStationStatus(Optional.of(Boolean.valueOf(command[1]))));
             }else if(command[0].equals("consume") && command[1] != null) {
                 this.fridgeController.tell(new FridgeController.ConsumeProduct(command[1]));
-            }else if(command[0].equals("order") && command[1] != null){
-                int amount = 1;
-                if (!command[4].isEmpty()){
-                    amount = Integer.parseInt(command[4]);
-                }
-                this.fridgeController.tell(new FridgeController.OrderProduct(new Product(Double.parseDouble(command[1]), Double.parseDouble(command[2]), command[3]), amount));
+            }else if(command[0].equals("order") && command[1] != null && command[2] != null && command[3] != null){
+                this.fridgeController.tell(new FridgeController.OrderProduct(new Product(Double.parseDouble(command[1]), Double.parseDouble(command[2]), command[3])));
+            }else if(command[0].equals("store") && command[1] != null && command[2] != null && command[3] != null) {
+                this.fridgeController.tell(new FridgeController.StoreProduct(new Product(Double.parseDouble(command[1]), Double.parseDouble(command[2]), command[3])));
+            }else if(command[0].equals("fridgecontents")) {
+                this.fridgeController.tell(new FridgeController.RequestProductList());
             }
         }
         getContext().getLog().info("UI done");

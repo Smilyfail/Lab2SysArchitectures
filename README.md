@@ -26,7 +26,7 @@ It understands a variety of different commands, below is a list of which ones ma
 ### Fridge:
     consume {productName} - will remove the given item from the fridge if it is available
     order {productPrice} {productWeight} {productName} {Optional: Amount} - will try to order given product
-
+    store {weight} {any price} {name} - stores item (There is no cap on the weight on this, so only for debugging uses!, otherwise use the order function
 Important Side note: The commands have to be entered in lower caps!
 
 ## A few rules which the application follows:
@@ -47,8 +47,10 @@ Automatically turns off if the temperature goes below 20.
 
 ### Fridge:
 The fridge can only hold a maximum of 50 items and 50 KGs at a time <br>
+Items can be consumed from the fridge <br>
 Should an item be out of stock after consuming it, a new one will be tried to order <br>
-If there is no space for the ordered item, the order will be canceled
+If there is no space for the ordered item, the order will be canceled <br>
+Items can be stored, but this is usually only used on orders currently
 
 # Test Scenarios:
 ### Turning the AC on and off:
@@ -79,3 +81,6 @@ If there is no space for the ordered item, the order will be canceled
 ### Ordering items:
     order {50+} {any price} {name} - will not work, not enough space left
     order {0 - 50} {any price} {name} - will order the item, if there arent 50 items yet
+
+### Displaying Contents
+    fridgecontents - will display eggs as standard, as there are no other dummy data in there, but will display more as more get added!
