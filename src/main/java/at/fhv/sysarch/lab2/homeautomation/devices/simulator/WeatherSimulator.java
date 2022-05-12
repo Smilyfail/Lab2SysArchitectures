@@ -34,7 +34,7 @@ public class WeatherSimulator extends AbstractBehavior<WeatherSimulator.WeatherS
         this.deviceId = deviceId;
 
         getContext().getLog().info("WeatherSimulator started");
-        scheduler.startTimerAtFixedRate(new WeatherUpdate(), Duration.ofSeconds(90));
+        scheduler.startTimerAtFixedRate(new WeatherUpdate(), Duration.ofSeconds(60));
     }
 
     @Override
