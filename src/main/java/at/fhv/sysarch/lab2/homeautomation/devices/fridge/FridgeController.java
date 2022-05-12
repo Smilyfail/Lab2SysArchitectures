@@ -50,6 +50,7 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     private ActorRef<AmountSensor.AmountCommand> amountSensor;
     private ActorRef<WeightSensor.WeightCommand> weightSensor;
     private ActorRef<OrderProcessor.OrderCommand> orderProcessor;
+    private int id;
     public FridgeController(ActorContext<FridgeCommand> context, String groupId, String deviceId) {
         super(context);
         this.groupId = groupId;
@@ -96,7 +97,8 @@ public class FridgeController extends AbstractBehavior<FridgeController.FridgeCo
     }
 
     private Behavior<FridgeCommand> onOrder(OrderProduct product) {
-        this.orderProcessor = getContext().spawn(OrderProcessor.create(getContext().getSelf(), this.amountSensor, this.weightSensor), "OrderProcessor");
+        this.orderProcessor = getContext().spawn(OrderProcessor.create(getContext().getSelf(), this.amountSensor, this.weightSensor), "OrderProcessor Number:" + id);
+        this.id ++;
         for(int i = 0; i < product.amount; i++) {
             this.orderProcessor.tell(new OrderProcessor.TryOrder(product.product));
         }
